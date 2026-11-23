@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">GSYS Auth</string>
+    <string name="auth_brand_subtitle">Portal Identitas Glassmorphism</string>
+    <string name="tab_login">Masuk (Login)</string>
+    <string name="tab_register">Daftar (Registrasi)</string>
+    <string name="login_card_title">Masuk ke GSYS</string>
+    <string name="login_card_desc">Gunakan akun email Google Anda untuk mengakses kartu identitas digital dan data diri yang tersimpan di Cloud Firestore.</string>
+    <string name="action_login_google">Masuk dengan Email Google</string>
+    <string name="register_card_title">Registrasi Data Diri</string>
+    <string name="register_card_desc">Lengkapi biodata Anda di bawah ini, lalu hubungkan email Google untuk menyimpan profil ke Firebase.</string>
+    <string name="action_register_google">Daftar &amp; Hubungkan Email Google</string>
+    <string name="auth_provider_note">Autentikasi menggunakan Google Sign-In (Email Google) melalui Firebase Auth. Jika Anda ingin menggunakan login Email &amp; Kata Sandi manual, aktifkan penyedia Email/Password di Firebase Console.</string>
+    <string name="action_select">Pilih</string>
+    <string name="action_cancel">Batal</string>
+    <string name="action_sign_out">Keluar dari Akun</string>
+</resources>

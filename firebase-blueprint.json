@@ -1,0 +1,114 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Personal profile data registered by an authenticated user.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Firebase Auth UID of the owner."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Authenticated user email address."
+        },
+        "fullName": {
+          "type": "string",
+          "description": "Full legal or display name."
+        },
+        "username": {
+          "type": "string",
+          "description": "Unique handle or nickname."
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "Contact phone or WhatsApp number."
+        },
+        "gender": {
+          "type": "string",
+          "enum": ["Laki-laki", "Perempuan", "Lainnya"],
+          "description": "User gender selection."
+        },
+        "birthDate": {
+          "type": "string",
+          "description": "Optional date of birth string."
+        },
+        "address": {
+          "type": "string",
+          "description": "Optional residential address."
+        },
+        "bio": {
+          "type": "string",
+          "description": "Optional role or short personal bio."
+        },
+        "photoUrl": {
+          "type": "string",
+          "description": "Optional Google profile photo URL."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp updated via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "userId",
+        "email",
+        "fullName",
+        "username",
+        "phoneNumber",
+        "gender",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "AuthActivity": {
+      "title": "AuthActivity",
+      "description": "Immutable authentication and profile activity audit entry.",
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "description": "Short label of the event (e.g. Registrasi Akun, Pembaruan Profil, Login Berhasil)."
+        },
+        "detail": {
+          "type": "string",
+          "description": "Human-readable description of the event."
+        },
+        "category": {
+          "type": "string",
+          "enum": ["auth", "profile", "security"],
+          "description": "Event category."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "action",
+        "detail",
+        "category",
+        "createdAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Owner-isolated personal profile registered during onboarding or edited later."
+    },
+    "/users/{userId}/activities/{activityId}": {
+      "schema": { "$ref": "#/entities/AuthActivity" },
+      "description": "User-scoped subcollection tracking registration, login, and profile update history."
+    }
+  }
+}

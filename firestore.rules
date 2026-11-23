@@ -1,0 +1,93 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidUserProfile(data) {
+      return data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+             data.email is string && data.email.size() >= 3 && data.email.size() <= 120 &&
+             data.fullName is string && data.fullName.size() >= 2 && data.fullName.size() <= 80 &&
+             data.username is string && data.username.size() >= 3 && data.username.size() <= 30 &&
+             data.phoneNumber is string && data.phoneNumber.size() >= 6 && data.phoneNumber.size() <= 25 &&
+             data.gender in ['Laki-laki', 'Perempuan', 'Lainnya'] &&
+             (!('birthDate' in data) || (data.birthDate is string && data.birthDate.size() <= 40)) &&
+             (!('address' in data) || (data.address is string && data.address.size() <= 200)) &&
+             (!('bio' in data) || (data.bio is string && data.bio.size() <= 200)) &&
+             (!('photoUrl' in data) || (data.photoUrl is string && data.photoUrl.size() <= 500));
+    }
+
+    function isValidAuthActivity(data) {
+      return data.action is string && data.action.size() >= 2 && data.action.size() <= 60 &&
+             data.detail is string && data.detail.size() >= 1 && data.detail.size() <= 200 &&
+             data.category in ['auth', 'profile', 'security'];
+    }
+
+    match /users/{userId} {
+      allow get, list: if isOwner(userId);
+
+      allow create: if isSignedIn() &&
+                       isOwner(userId) &&
+                       isValidId(userId) &&
+                       incoming().userId == request.auth.uid &&
+                       incoming().keys().hasAll(['userId', 'email', 'fullName', 'username', 'phoneNumber', 'gender', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['userId', 'email', 'fullName', 'username', 'phoneNumber', 'gender', 'birthDate', 'address', 'bio', 'photoUrl', 'createdAt', 'updatedAt']) &&
+                       isValidUserProfile(incoming()) &&
+                       incoming().createdAt is timestamp &&
+                       incoming().createdAt <= request.time &&
+                       incoming().updatedAt is timestamp &&
+                       incoming().updatedAt <= request.time;
+
+      allow update: if isSignedIn() &&
+                       isOwner(userId) &&
+                       isValidId(userId) &&
+                       isValidUserProfile(incoming()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().updatedAt is timestamp &&
+                       incoming().updatedAt <= request.time &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['email', 'fullName', 'username', 'phoneNumber', 'gender', 'birthDate', 'address', 'bio', 'photoUrl', 'updatedAt']);
+
+      allow delete: if isOwner(userId) && isValidId(userId);
+
+      match /activities/{activityId} {
+        allow get: if isOwner(userId) && isValidId(activityId);
+        allow list: if isOwner(userId);
+
+        allow create: if isSignedIn() &&
+                         isOwner(userId) &&
+                         isValidId(activityId) &&
+                         incoming().keys().hasAll(['action', 'detail', 'category', 'createdAt']) &&
+                         incoming().keys().hasOnly(['action', 'detail', 'category', 'createdAt']) &&
+                         isValidAuthActivity(incoming()) &&
+                         incoming().createdAt is timestamp &&
+                         incoming().createdAt <= request.time;
+
+        allow update: if false;
+        allow delete: if isOwner(userId) && isValidId(activityId);
+      }
+    }
+  }
+}
